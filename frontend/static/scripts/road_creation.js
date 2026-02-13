@@ -42,6 +42,8 @@ function drawCrossroad(canvas, ctx) {
     const zebraGap = 8;
     const zebraLength = 60;
     const zebraCount = Math.floor((roadWidth - 8) / (zebraWidth + zebraGap));
+    const pavementWidth = zebraLength + 10;
+    const bikeLaneWidth = pavementWidth / 3;
 
     const totalZebraHeight = zebraCount * zebraWidth + (zebraCount - 1) * zebraGap;
     const zebraOffset = (roadWidth - totalZebraHeight) / 2;
@@ -49,6 +51,20 @@ function drawCrossroad(canvas, ctx) {
     // Trawa
     ctx.fillStyle = '#2e6509';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Chodniki
+    ctx.fillStyle = 'grey'; 
+    ctx.fillRect(0, centerY - roadWidth / 2 - pavementWidth, canvas.width, pavementWidth);
+    ctx.fillRect(0, centerY + roadWidth / 2, canvas.width, pavementWidth);
+    ctx.fillRect(centerX + roadWidth / 2, 0, pavementWidth, canvas.height);
+    ctx.fillRect(centerX - roadWidth / 2 - pavementWidth, 0, pavementWidth, canvas.height);
+
+    // Droga dla rowerów
+    ctx.fillStyle = '#784141';
+    ctx.fillRect(0, centerY - roadWidth / 2 - pavementWidth, canvas.width, bikeLaneWidth);
+    ctx.fillRect(0, centerY + roadWidth / 2 + pavementWidth - bikeLaneWidth, canvas.width, bikeLaneWidth);
+    ctx.fillRect(centerX + roadWidth / 2 + pavementWidth - bikeLaneWidth, 0, bikeLaneWidth, canvas.height);
+    ctx.fillRect(centerX - roadWidth / 2 - pavementWidth, 0, bikeLaneWidth, canvas.height);
 
     // Droga
     ctx.fillStyle = '#444040';
