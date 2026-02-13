@@ -36,11 +36,11 @@ function drawCrossroad(canvas, ctx) {
     const centerY = canvas.height / 2;
     
     const laneWidth = 40;
-    const roadWidth = NUM_OF_LANES === 1 ? 80 : NUM_OF_LANES * laneWidth * 2;
-    const stopLineDistance = NUM_OF_LANES === 1 ? 110 : roadWidth / 2 + 80;
+    const roadWidth = NUM_OF_LANES * laneWidth * 2;
+    const stopLineDistance = roadWidth / 2 + 80;
     const zebraWidth = 8;
     const zebraGap = 8;
-    const zebraLength = NUM_OF_LANES === 1 ? roadWidth - 24 : 60;
+    const zebraLength = 60;
     const zebraCount = Math.floor((roadWidth - 8) / (zebraWidth + zebraGap));
 
     const totalZebraHeight = zebraCount * zebraWidth + (zebraCount - 1) * zebraGap;
