@@ -166,21 +166,14 @@ function generateWorldGeometry(canvasWidth: number, canvasHeight: number, NUM_OF
         }
     }
 
-    if (NUM_OF_LANES === 1) {
-        geometry.stopLines.push(
-            { x1: centerX - stopLineDistance, y1: centerY, x2: centerX - stopLineDistance, y2: centerY + roadWidth / 2 },
-            { x1: centerX + stopLineDistance, y1: centerY, x2: centerX + stopLineDistance, y2: centerY - roadWidth / 2 },
-            { x1: centerX, y1: centerY - stopLineDistance, x2: centerX - roadWidth / 2, y2: centerY - stopLineDistance },
-            { x1: centerX, y1: centerY + stopLineDistance, x2: centerX + roadWidth / 2, y2: centerY + stopLineDistance }
-        );
-    } else {
-        geometry.stopLines.push(
-            { x1: centerX - stopLineDistance, y1: centerY - roadWidth / 2, x2: centerX - stopLineDistance, y2: centerY + roadWidth / 2 },
-            { x1: centerX + stopLineDistance, y1: centerY - roadWidth / 2, x2: centerX + stopLineDistance, y2: centerY + roadWidth / 2 },
-            { x1: centerX - roadWidth / 2, y1: centerY - stopLineDistance, x2: centerX + roadWidth / 2, y2: centerY - stopLineDistance },
-            { x1: centerX - roadWidth / 2, y1: centerY + stopLineDistance, x2: centerX + roadWidth / 2, y2: centerY + stopLineDistance }
-        );
-    }
+    
+    geometry.stopLines.push(
+        { x1: centerX - stopLineDistance, y1: centerY, x2: centerX - stopLineDistance, y2: centerY + roadWidth / 2 },
+        { x1: centerX + stopLineDistance, y1: centerY, x2: centerX + stopLineDistance, y2: centerY - roadWidth / 2 },
+        { x1: centerX, y1: centerY - stopLineDistance, x2: centerX - roadWidth / 2, y2: centerY - stopLineDistance },
+        { x1: centerX, y1: centerY + stopLineDistance, x2: centerX + roadWidth / 2, y2: centerY + stopLineDistance }
+    );
+    
 
     for (let i = 0; i < zebraCount; i++) {
         const y: number = centerY - roadWidth / 2 + zebraOffset + (i * (zebraWidth + zebraGap));
