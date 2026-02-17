@@ -1,6 +1,20 @@
 {
     "lanes" : {
-        "count" : 1
+        "count" : 2,
+        "laneWidth": 40
+    },
+    "zebra": {
+        "zebraWidth": 8,
+        "zebraGap": 8,
+        "zebraLength": 60,
+        "zebraMargin": 15
+    },
+    "vehicle": {
+        "car": {
+            "width": 40,
+            "height": 40,
+            "speed": 2
+        }
     }
 
 }

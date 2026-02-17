@@ -1,7 +1,20 @@
-
 export interface Config {
     lanes: {
         count: number;
+        laneWidth: number;
+    };
+    zebra: {
+        zebraWidth: number;
+        zebraGap: number;
+        zebraLength: number;
+        zebraMargin: number;
+    };
+    vehicle: {
+        car: {
+            width: number;
+            height: number;
+            speed: number;
+        };
     };
 }
 
@@ -17,7 +30,6 @@ export interface Line {
     y1: number;
     x2: number;
     y2: number;
-    lineWidth?: number;
 }
 
 export interface ZebraCrossing {
@@ -73,6 +85,34 @@ export interface WorldGeometry {
     };
 }
 
+export type RoadDirection = 'north' | 'south' | 'east' | 'west';
+
+export interface Vehicle {
+    id: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    speed: number;
+    currentRoad: RoadDirection;
+    targetRoad: RoadDirection;
+    lane: number;
+    state: 'moving' | 'stopping' | 'stopped' | 'turning';
+    route: RoadDirection[];
+    carImage: string;
+}
+
+export interface Command {
+    type: 'addVehicle' | 'step' | 'run' | 'pause' | 'reset';
+    vehicleId?: string;
+    startRoad?: RoadDirection;
+    endRoad?: RoadDirection;
+}
+
 export interface TrafficWorldProps {
     onGeometryReady: (geometry: WorldGeometry) => void;
+}
+
+export interface VehicleSimulationProps {
+    geometry: WorldGeometry;
 }
