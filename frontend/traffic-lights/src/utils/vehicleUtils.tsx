@@ -54,10 +54,11 @@ export const selectLane = (
 export const updateVehiclePosition = (
     vehicle: Vehicle,
     geometry: WorldGeometry,
-    speed: number
+    speed: number,
 ): void => {
     const { center, config } = geometry;
     const { laneWidth } = config;
+    
     const atIntersection = Math.abs(vehicle.x - center.x) < 100 && 
                           Math.abs(vehicle.y - center.y) < 100;
 

@@ -99,3 +99,92 @@ export const drawVehicle = (
 
     ctx.restore();
 };
+
+export const drawTrafficLights = (
+    ctx: CanvasRenderingContext2D,
+    geometry: WorldGeometry,
+    lights: Record<string, 'red' | 'yellow' | 'green'>
+): void => {
+    const { center, config } = geometry;
+    const roadHalfWidth = config.numOfLanes * config.laneWidth;
+    const bikeLaneWidth = config.bikeLaneWidth;
+    const pavementWidth = config.pavementWidth;
+
+    const grassOffset = roadHalfWidth + bikeLaneWidth + pavementWidth + 30;
+    
+    const arrowConfigs = {
+        north: { 
+            x: center.x - grassOffset, 
+            y: center.y - grassOffset,
+            rotation: Math.PI * 2 
+        },
+        south: { 
+            x: center.x + grassOffset, 
+            y: center.y + grassOffset,
+            rotation: -Math.PI  
+        },
+        east: { 
+            x: center.x + grassOffset, 
+            y: center.y - grassOffset,
+            rotation: Math.PI / 2 
+        },
+        west: { 
+            x: center.x - grassOffset, 
+            y: center.y + grassOffset,
+            rotation: -Math.PI / 2
+        }
+    };
+
+    Object.entries(arrowConfigs).forEach(([startRoad, config]) => {
+        const lightState = lights[startRoad] ?? 'red';
+        drawArrowSet(ctx, config.x, config.y, config.rotation, lightState);
+    });
+};
+
+const drawArrowSet = (
+    ctx: CanvasRenderingContext2D,
+    baseX: number,
+    baseY: number,
+    rotation: number,
+    lightState: 'red' | 'yellow' | 'green'
+): void => {
+    const arrowSize = 25;  
+    const spacing = 30;    
+    
+    const color = lightState === 'green' ? '#00ff26' : 
+                  lightState === 'yellow' ? '#ffdd00' : '#af0000';
+
+    ctx.save();
+    ctx.translate(baseX, baseY);
+    ctx.rotate(rotation);
+    ctx.fillStyle = color;
+
+    const arrowPositions = [
+        { x: -spacing, y: 0, turnAngle: Math.PI },      // Lewa
+        { x: 0, y: 0, turnAngle: Math.PI / 2 },         // Środkowa
+        { x: spacing, y: 0, turnAngle: Math.PI * 2 },   // Prawa
+    ];
+
+    arrowPositions.forEach(pos => {
+        ctx.save();
+        ctx.translate(pos.x, pos.y);
+        ctx.rotate(pos.turnAngle);
+        drawSingleArrow(ctx, arrowSize);
+        ctx.restore();
+    });
+
+    ctx.restore();
+};
+
+const drawSingleArrow = (ctx: CanvasRenderingContext2D, size: number): void => {
+    ctx.beginPath();
+    ctx.moveTo(-size/2, -size/2);  
+    ctx.lineTo(size/2, 0);         
+    ctx.lineTo(-size/2, size/2);   
+    ctx.lineTo(-size/4, 0);        
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+};

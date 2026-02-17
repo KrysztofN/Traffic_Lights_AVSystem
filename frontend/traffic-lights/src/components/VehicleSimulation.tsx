@@ -4,6 +4,7 @@ import { useCommands } from '../hooks/useCommands';
 import { useConfig } from '../hooks/useConfig';
 import { getSpawnPosition, selectLane, updateVehiclePosition, shouldRemoveVehicle } from '../utils/vehicleUtils';
 import { drawVehicle } from '../utils/renderer';
+import { drawTrafficLights } from '../utils/renderer';
 
 const CAR_FILES = [
     'red-car.svg',
@@ -48,21 +49,22 @@ export const VehicleSimulation: React.FC<VehicleSimulationProps> = ({ geometry }
     const renderCanvas = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-        
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        drawTrafficLights(ctx, geometry, {"north": "red", "south": "red", "west": "red", "east": "red"});
 
         vehiclesRef.current.forEach(vehicle => {
             const img = carImages.current.get(vehicle.carImage);
             drawVehicle(
-                ctx,
-                vehicle.x,
-                vehicle.y,
-                vehicle.width,
-                vehicle.height,
-                vehicle.currentRoad,
+                ctx, 
+                vehicle.x, 
+                vehicle.y, 
+                vehicle.width, 
+                vehicle.height, 
+                vehicle.currentRoad, 
                 img
             );
         });
@@ -97,22 +99,25 @@ export const VehicleSimulation: React.FC<VehicleSimulationProps> = ({ geometry }
     };
 
     const step = () => {
-        if (!config) return;
+    if (!config) return;
+    
+    vehiclesRef.current.forEach(vehicle => {
+        updateVehiclePosition(
+            vehicle, 
+            geometry, 
+            config.vehicle.car.speed, 
+        );
+    });
 
-        vehiclesRef.current.forEach(vehicle => {
-            updateVehiclePosition(vehicle, geometry, config.vehicle.car.speed);
-        });
+    vehiclesRef.current.forEach((vehicle, id) => {
+        if (shouldRemoveVehicle(vehicle, geometry.canvas.width, geometry.canvas.height)) {
+            vehiclesRef.current.delete(id);
+        }
+    });
 
-        vehiclesRef.current.forEach((vehicle, id) => {
-            if (shouldRemoveVehicle(vehicle, geometry.canvas.width, geometry.canvas.height)) {
-                vehiclesRef.current.delete(id);
-            }
-        });
-
-        renderCanvas();
-        setVehicles(new Map(vehiclesRef.current));
-    };
-
+    renderCanvas();
+    setVehicles(new Map(vehiclesRef.current));
+};
     const executeCommand = (cmd: Command) => {
         if (cmd.type === 'addVehicle' && cmd.vehicleId && cmd.startRoad && cmd.endRoad) {
             addVehicle(cmd.vehicleId, cmd.startRoad, cmd.endRoad);
