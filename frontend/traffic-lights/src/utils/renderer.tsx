@@ -1,4 +1,4 @@
-import type { WorldGeometry, Line } from '../types';
+import type { WorldGeometry, Line, LightMap, LightState, MovementLights } from '../types';
 
 export const drawLine = (
     ctx: CanvasRenderingContext2D,
@@ -96,79 +96,62 @@ export const drawVehicle = (
     if (image?.complete) {
         ctx.drawImage(image, -width / 2, -height / 2, width, height);
     }
-
     ctx.restore();
 };
 
 export const drawTrafficLights = (
     ctx: CanvasRenderingContext2D,
     geometry: WorldGeometry,
-    lights: Record<string, 'red' | 'yellow' | 'green'>
+    lights: LightMap,
+    conditionalBlink: boolean
 ): void => {
     const { center, config } = geometry;
     const roadHalfWidth = config.numOfLanes * config.laneWidth;
-    const bikeLaneWidth = config.bikeLaneWidth;
-    const pavementWidth = config.pavementWidth;
+    const grassOffset = roadHalfWidth + config.bikeLaneWidth + config.pavementWidth + 30;
 
-    const grassOffset = roadHalfWidth + bikeLaneWidth + pavementWidth + 30;
-    
     const arrowConfigs = {
-        north: { 
-            x: center.x - grassOffset, 
-            y: center.y - grassOffset,
-            rotation: Math.PI * 2 
-        },
-        south: { 
-            x: center.x + grassOffset, 
-            y: center.y + grassOffset,
-            rotation: -Math.PI  
-        },
-        east: { 
-            x: center.x + grassOffset, 
-            y: center.y - grassOffset,
-            rotation: Math.PI / 2 
-        },
-        west: { 
-            x: center.x - grassOffset, 
-            y: center.y + grassOffset,
-            rotation: -Math.PI / 2
-        }
+        north: { x: center.x - grassOffset, y: center.y - grassOffset, rotation: Math.PI * 2 },
+        south: { x: center.x + grassOffset, y: center.y + grassOffset, rotation: -Math.PI },
+        east:  { x: center.x + grassOffset, y: center.y - grassOffset, rotation: Math.PI / 2 },
+        west:  { x: center.x - grassOffset, y: center.y + grassOffset, rotation: -Math.PI / 2 },
     };
 
-    Object.entries(arrowConfigs).forEach(([startRoad, config]) => {
-        const lightState = lights[startRoad] ?? 'red';
-        drawArrowSet(ctx, config.x, config.y, config.rotation, lightState);
+    Object.entries(arrowConfigs).forEach(([road, cfg]) => {
+        drawArrowSet(ctx, cfg.x, cfg.y, cfg.rotation, lights[road as keyof LightMap], conditionalBlink);
     });
+};
+
+const lightToColor = (state: LightState, blink: boolean): string => {
+    if (state === 'green')       return '#00ff26';
+    if (state === 'yellow')      return '#ffdd00';
+    if (state === 'conditional') return blink ? '#00ff26' : '#006f00'; 
+    return '#af0000';
 };
 
 const drawArrowSet = (
     ctx: CanvasRenderingContext2D,
-    baseX: number,
-    baseY: number,
-    rotation: number,
-    lightState: 'red' | 'yellow' | 'green'
+    baseX: number, baseY: number, rotation: number,
+    lights: MovementLights,
+    blink: boolean
 ): void => {
-    const arrowSize = 25;  
-    const spacing = 30;    
-    
-    const color = lightState === 'green' ? '#00ff26' : 
-                  lightState === 'yellow' ? '#ffdd00' : '#af0000';
+    const arrowSize = 25;
+    const spacing = 30;
 
     ctx.save();
     ctx.translate(baseX, baseY);
     ctx.rotate(rotation);
-    ctx.fillStyle = color;
 
-    const arrowPositions = [
-        { x: -spacing, y: 0, turnAngle: Math.PI },      // Lewa
-        { x: 0, y: 0, turnAngle: Math.PI / 2 },         // Środkowa
-        { x: spacing, y: 0, turnAngle: Math.PI * 2 },   // Prawa
+    const arrows = [
+        { x: -spacing, y: 0, turnAngle: Math.PI, color: lightToColor(lights.right, blink) },
+        { x: 0, y: 0, turnAngle: Math.PI / 2, color: lightToColor(lights.straight, blink) },
+        { x: spacing,  y: 0, turnAngle: Math.PI * 2, color: lightToColor(lights.left, blink) },
     ];
 
-    arrowPositions.forEach(pos => {
+    arrows.forEach(({ x, y, turnAngle, color }) => {
         ctx.save();
-        ctx.translate(pos.x, pos.y);
-        ctx.rotate(pos.turnAngle);
+        ctx.translate(x, y);
+        ctx.rotate(turnAngle);
+        ctx.fillStyle = color;
         drawSingleArrow(ctx, arrowSize);
         ctx.restore();
     });

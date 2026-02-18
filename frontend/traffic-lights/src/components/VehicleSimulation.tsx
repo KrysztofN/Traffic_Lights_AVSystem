@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import type { Vehicle, VehicleSimulationProps, Command, RoadDirection } from '../types';
+import type { Vehicle, VehicleSimulationProps, Command, RoadDirection, LightMap, LightState, MovementLights } from '../types';
 import { useCommands } from '../hooks/useCommands';
 import { useConfig } from '../hooks/useConfig';
-import { getSpawnPosition, selectLane, updateVehiclePosition, shouldRemoveVehicle } from '../utils/vehicleUtils';
+import { getSpawnPosition, selectLane, updateVehiclePosition, shouldRemoveVehicle, getMovementType } from '../utils/vehicleUtils';
 import { drawVehicle } from '../utils/renderer';
 import { drawTrafficLights } from '../utils/renderer';
 
@@ -16,13 +16,106 @@ const CAR_FILES = [
     'turquise-car.svg'
 ];
 
+const ml = (left: LightState, straight: LightState, right: LightState): MovementLights => ({ left, straight, right });
+const OFF = ml('red','red','red');
+const COND = ml('red', 'red', 'conditional');
+
+const PHASES: LightMap[] = [
+    // Scenariusz 1
+    // Droga północna: prosto, prawo
+    // Droga południowa: prosto, prawo
+    // Droga wschodnia: warunkowo w prawo
+    // Droga zachodnia: warunkowo w prawo
+    {
+        north: ml('red', 'green', 'green'),
+        south: ml('red', 'green', 'green'),
+        east:  COND,
+        west:  COND,
+    },
+    {
+        north: ml('red', 'yellow', 'yellow'),
+        south: ml('red', 'yellow', 'yellow'),
+        east:  OFF,
+        west:  OFF,
+    },
+    { north: OFF, south: OFF, east: OFF, west: OFF },
+
+    // Scenariusz 2
+    // Droga wschodnia: prosto, prawo
+    // Droga zachodnia: prosto, prawo
+    // Droga północna: warunkowo w prawo
+    // Droga południowa: warunkowo w prawo
+    {
+        north: COND,
+        south: COND,
+        east:  ml('red', 'green', 'green'),
+        west:  ml('red', 'green', 'green'),
+    },
+    {
+        north: OFF,
+        south: OFF,
+        east:  ml('red', 'yellow', 'yellow'),
+        west:  ml('red', 'yellow', 'yellow'),
+    },
+    { north: OFF, south: OFF, east: OFF, west: OFF },
+
+    // Scenariusz 3
+    // Droga północna: lewo
+    // Droga południowa: lewo
+    {
+        north: ml('green', 'red', 'red'),
+        south: ml('green', 'red', 'red'),
+        east:  OFF,
+        west:  OFF,
+    },
+    {
+        north: ml('yellow', 'red', 'red'),
+        south: ml('yellow', 'red', 'red'),
+        east:  OFF,
+        west:  OFF,
+    },
+    { north: OFF, south: OFF, east: OFF, west: OFF },
+
+    // Scenariusz 4
+    // Droga wschodnia: lewo
+    // Droga zachodnia: lewo
+    {
+        north: OFF,
+        south: OFF,
+        east:  ml('green', 'red', 'red'),
+        west:  ml('green', 'red', 'red'),
+    },
+    {
+        north: OFF,
+        south: OFF,
+        east:  ml('yellow', 'red', 'red'),
+        west:  ml('yellow', 'red', 'red'),
+    },
+    { north: OFF, south: OFF, east: OFF, west: OFF },
+];
+
+const PHASE_DURATIONS = [
+    300, 60, 30,  
+    300, 60, 30,  
+    200, 60, 30,  
+    200, 60, 30,  
+];
+
+
 export const VehicleSimulation: React.FC<VehicleSimulationProps> = ({ geometry }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const vehiclesRef = useRef<Map<string, Vehicle>>(new Map());
     const carImages = useRef<Map<string, HTMLImageElement>>(new Map());
     const animationRef = useRef<number>(null);
 
+    const lightsRef = useRef<LightMap>({ ...PHASES[0] });
+    const phaseRef = useRef(0);
+    const phaseTimerRef = useRef(0);
+    const blinkRef = useRef(true);
+    const blinkTimerRef = useRef(0);
+
     const [vehicles, setVehicles] = useState<Map<string, Vehicle>>(new Map());
+    const [trafficLights, setTrafficLights] = useState<LightMap>({ ...PHASES[0] });
     const [currentCommandIndex, setCurrentCommandIndex] = useState(0);
     const [isRunning, setIsRunning] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
@@ -54,7 +147,7 @@ export const VehicleSimulation: React.FC<VehicleSimulationProps> = ({ geometry }
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        drawTrafficLights(ctx, geometry, {"north": "red", "south": "red", "west": "red", "east": "red"});
+        drawTrafficLights(ctx, geometry, lightsRef.current, blinkRef.current);
 
         vehiclesRef.current.forEach(vehicle => {
             const img = carImages.current.get(vehicle.carImage);
@@ -87,6 +180,8 @@ export const VehicleSimulation: React.FC<VehicleSimulationProps> = ({ geometry }
             speed: config.vehicle.car.speed,
             currentRoad: pos.direction,
             targetRoad: endRoad,
+            startRoad: startRoad,
+            movementType: getMovementType(startRoad, endRoad),
             lane: selectedLane,
             state: 'moving',
             route: [endRoad],
@@ -99,25 +194,22 @@ export const VehicleSimulation: React.FC<VehicleSimulationProps> = ({ geometry }
     };
 
     const step = () => {
-    if (!config) return;
-    
-    vehiclesRef.current.forEach(vehicle => {
-        updateVehiclePosition(
-            vehicle, 
-            geometry, 
-            config.vehicle.car.speed, 
-        );
-    });
+        if (!config) return;
 
-    vehiclesRef.current.forEach((vehicle, id) => {
-        if (shouldRemoveVehicle(vehicle, geometry.canvas.width, geometry.canvas.height)) {
-            vehiclesRef.current.delete(id);
-        }
-    });
+        vehiclesRef.current.forEach(vehicle => {
+            updateVehiclePosition(vehicle, vehiclesRef.current, geometry, config.vehicle.car.speed, lightsRef.current);
+        });
 
-    renderCanvas();
-    setVehicles(new Map(vehiclesRef.current));
-};
+        vehiclesRef.current.forEach((vehicle, id) => {
+            if (shouldRemoveVehicle(vehicle, geometry.canvas.width, geometry.canvas.height)) {
+                vehiclesRef.current.delete(id);
+            }
+        });
+
+        renderCanvas();
+        setVehicles(new Map(vehiclesRef.current));
+    };
+
     const executeCommand = (cmd: Command) => {
         if (cmd.type === 'addVehicle' && cmd.vehicleId && cmd.startRoad && cmd.endRoad) {
             addVehicle(cmd.vehicleId, cmd.startRoad, cmd.endRoad);
@@ -127,33 +219,49 @@ export const VehicleSimulation: React.FC<VehicleSimulationProps> = ({ geometry }
         }
     };
 
+    const advanceLightPhase = () => {
+        phaseTimerRef.current++;
+
+        blinkTimerRef.current++;
+        if (blinkTimerRef.current >= 30) {
+            blinkTimerRef.current = 0;
+            blinkRef.current = !blinkRef.current;
+        }
+
+        if (phaseTimerRef.current >= PHASE_DURATIONS[phaseRef.current]) {
+            phaseTimerRef.current = 0;
+            phaseRef.current = (phaseRef.current + 1) % PHASES.length;
+            lightsRef.current = PHASES[phaseRef.current];
+            setTrafficLights({ ...PHASES[phaseRef.current] });
+        }
+    };
+
     const reset = () => {
         vehiclesRef.current.clear();
         setVehicles(new Map());
         setCurrentCommandIndex(0);
         setIsRunning(false);
-        
+
+        phaseRef.current      = 0;
+        phaseTimerRef.current = 0;
+        lightsRef.current     = { ...PHASES[0] };
+        setTrafficLights({ ...PHASES[0] });
+
         const canvas = canvasRef.current;
         if (canvas) {
             const ctx = canvas.getContext('2d');
-            if (ctx) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }
+            ctx?.clearRect(0, 0, canvas.width, canvas.height);
         }
     };
 
     useEffect(() => {
         if (!isRunning || !config) return;
 
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
         let lastCommandTime = Date.now();
 
         const animate = () => {
+            advanceLightPhase();
+
             step();
 
             const now = Date.now();
@@ -169,12 +277,10 @@ export const VehicleSimulation: React.FC<VehicleSimulationProps> = ({ geometry }
         animationRef.current = requestAnimationFrame(animate);
 
         return () => {
-            if (animationRef.current) {
-                cancelAnimationFrame(animationRef.current);
-            }
+            if (animationRef.current) cancelAnimationFrame(animationRef.current);
         };
     }, [isRunning, geometry, commands, currentCommandIndex, config]);
-
+    
     return (
         <>
             <canvas

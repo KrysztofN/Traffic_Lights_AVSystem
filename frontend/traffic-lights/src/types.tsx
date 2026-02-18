@@ -94,6 +94,8 @@ export interface Vehicle {
     width: number;
     height: number;
     speed: number;
+    startRoad: RoadDirection;
+    movementType: MovementType;
     currentRoad: RoadDirection;
     targetRoad: RoadDirection;
     lane: number;
@@ -116,3 +118,11 @@ export interface TrafficWorldProps {
 export interface VehicleSimulationProps {
     geometry: WorldGeometry;
 }
+
+export type LightState = 'red' | 'yellow' | 'green' | 'conditional';
+
+export type MovementType = 'left' | 'straight' | 'right';
+
+export type MovementLights = { left: LightState; straight: LightState; right: LightState };
+
+export type LightMap = { north: MovementLights; south: MovementLights; east: MovementLights; west: MovementLights };
