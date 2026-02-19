@@ -1,6 +1,6 @@
 {
     "lanes" : {
-        "count" : 2,
+        "count" : 3,
         "laneWidth": 40
     },
     "zebra": {
@@ -15,6 +15,16 @@
             "height": 40,
             "speed": 2
         }
+    },
+    "simulation": {
+        "maxPedestriansPerPath": 5,
+        "spawnInterval": 120,
+        "pedestrianPhaseIndex": 16,
+        "clearancePhaseIndex": 17
+    },
+    "pedestrian": {
+        "speed": 0.5,
+        "size": 16
     }
 
 }

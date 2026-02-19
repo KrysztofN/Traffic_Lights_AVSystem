@@ -16,6 +16,16 @@ export interface Config {
             speed: number;
         };
     };
+    simulation: {
+        maxPedestriansPerPath: number,
+        spawnInterval: number,
+        pedestrianPhaseIndex: number,
+        clearancePhaseIndex: number
+    },
+    pedestrian: {
+        speed: number,
+        size: number
+    }
 }
 
 export interface Rectangle {
@@ -85,8 +95,6 @@ export interface WorldGeometry {
     };
 }
 
-export type RoadDirection = 'north' | 'south' | 'east' | 'west';
-
 export interface Vehicle {
     id: string;
     x: number;
@@ -103,14 +111,12 @@ export interface Vehicle {
     route: RoadDirection[];
     carImage: string;
 }
-
 export interface Command {
     type: 'addVehicle' | 'step' | 'run' | 'pause' | 'reset';
     vehicleId?: string;
     startRoad?: RoadDirection;
     endRoad?: RoadDirection;
 }
-
 export interface TrafficWorldProps {
     onGeometryReady: (geometry: WorldGeometry) => void;
 }
@@ -118,6 +124,52 @@ export interface TrafficWorldProps {
 export interface VehicleSimulationProps {
     geometry: WorldGeometry;
 }
+export interface Pedestrian {
+    id: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    speed: number;
+    path: PedestrianPath;
+    direction: 1 | -1; // 1 = prawo/lewo, -1 = góra/dół
+    state: 'walking' | 'waiting' | 'crossing';
+    pedestrianImg: string;
+}
+
+export interface SimulationControlsProps {
+    vehicles: Map<string, Vehicle>;
+    currentCommandIndex: number;
+    commandsLength: number;
+    isRunning: boolean;
+    isMinimized: boolean;
+    roadCounts: Record<RoadDirection, number>;
+    waitingCounts: Record<PedestrianPath, number>;
+    onToggleRunning: () => void;
+    onToggleMinimized: () => void;
+    onStep: () => void;
+    onReset: () => void;
+}
+
+export interface PedestrianData {
+    speed: number,
+    size: number
+}
+
+export interface LightAlgorithmState {
+    currentPhase: number;
+    phaseTimer: number;
+    lights: LightMap;
+}
+
+export interface LightAlgorithm {
+    getInitialState: () => LightAlgorithmState;
+    tick: (state: LightAlgorithmState) => { state: LightAlgorithmState; lights: LightMap };
+    isPedestrianPhase: (state: LightAlgorithmState) => boolean;
+    isClearancePhase: (state: LightAlgorithmState) => boolean;
+}
+
+export type RoadDirection = 'north' | 'south' | 'east' | 'west';
 
 export type LightState = 'red' | 'yellow' | 'green' | 'conditional';
 
@@ -126,3 +178,5 @@ export type MovementType = 'left' | 'straight' | 'right';
 export type MovementLights = { left: LightState; straight: LightState; right: LightState };
 
 export type LightMap = { north: MovementLights; south: MovementLights; east: MovementLights; west: MovementLights };
+
+export type PedestrianPath = 'north' | 'south' | 'west' | 'east';

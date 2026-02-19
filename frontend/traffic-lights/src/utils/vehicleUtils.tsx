@@ -22,7 +22,6 @@ const isConflictingVehicleNearby = (
         if (other.id === vehicle.id) return false;
         if (other.startRoad !== conflictingRoad) return false;
         if (other.movementType !== 'straight') return false;
-        if (other.route.length === 0) return false; 
 
         return (
             Math.abs(other.x - center.x) < dangerZone &&
@@ -92,11 +91,12 @@ export const getMovementType = (startRoad: RoadDirection, endRoad: RoadDirection
 export const getSpawnPosition = (road: RoadDirection, lane: number, geometry: WorldGeometry) => {
     const { center, config } = geometry;
     const laneOffset = (lane + 0.5) * config.laneWidth;
+    const offScreen = 80;
     const positions = {
-        south: { x: center.x + laneOffset, y: geometry.canvas.height, direction: 'north' as const },
-        north: { x: center.x - laneOffset, y: 0,                      direction: 'south' as const },
-        east:  { x: geometry.canvas.width,  y: center.y - laneOffset, direction: 'west'  as const },
-        west:  { x: 0,                      y: center.y + laneOffset, direction: 'east'  as const },
+        south: { x: center.x + laneOffset, y: geometry.canvas.height + offScreen, direction: 'north' as const },
+        north: { x: center.x - laneOffset, y: -offScreen, direction: 'south' as const },
+        east: { x: geometry.canvas.width + offScreen,  y: center.y - laneOffset, direction: 'west'  as const },
+        west: { x: -offScreen, y: center.y + laneOffset, direction: 'east'  as const },
     };
     return positions[road];
 };
@@ -109,6 +109,30 @@ export const selectLane = (startRoad: RoadDirection, endRoad: RoadDirection, lan
     return Math.floor(laneCount / 2);
 };
 
+const isVehicleAhead = (
+    vehicle: Vehicle,
+    allVehicles: Map<string, Vehicle>,
+    minDistance: number
+): boolean => {
+    return Array.from(allVehicles.values()).some(other => {
+        if (other.id === vehicle.id) return false;
+        if (other.currentRoad !== vehicle.currentRoad) return false;
+        if (other.lane !== vehicle.lane) return false;
+
+        const dx = other.x - vehicle.x;
+        const dy = other.y - vehicle.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > minDistance) return false;
+
+        switch (vehicle.currentRoad) {
+            case 'north': return dy < 0;
+            case 'south': return dy > 0;
+            case 'east':  return dx > 0;
+            case 'west':  return dx < 0;
+        }
+    });
+};
+
 export const updateVehiclePosition = (
     vehicle: Vehicle,
     allVehicles: Map<string, Vehicle>,
@@ -118,6 +142,8 @@ export const updateVehiclePosition = (
 ): void => {
     const { center, config } = geometry;
     const { laneWidth, stopLineDistance, roadWidth } = config;
+
+    if (vehicle.state !== 'turning' && isVehicleAhead(vehicle, allVehicles, vehicle.width + 8)) return;
 
     if (vehicle.state === 'turning') {
         handleTurning(vehicle, center, laneWidth, speed);
@@ -144,7 +170,12 @@ export const updateVehiclePosition = (
     }
 };
 
-const handleTurning = (vehicle: Vehicle, center: { x: number; y: number }, laneWidth: number, speed: number): void => {
+const handleTurning = (
+    vehicle: Vehicle, 
+    center: { x: number; y: number }, 
+    laneWidth: number, 
+    speed: number
+): void => {
     const targetLaneOffset = (vehicle.lane + 0.5) * laneWidth;
     const targets: Record<string, { x: number; y: number }> = {
         north: { x: center.x + targetLaneOffset, y: vehicle.y },
@@ -171,7 +202,10 @@ const handleTurning = (vehicle: Vehicle, center: { x: number; y: number }, laneW
     }
 };
 
-const handleStraightMovement = (vehicle: Vehicle, speed: number): void => {
+const handleStraightMovement = (
+    vehicle: Vehicle, 
+    speed: number
+): void => {
     const movements: Record<string, { dx: number; dy: number }> = {
         north: { dx: 0, dy: -speed }, south: { dx: 0, dy: speed },
         east:  { dx: speed, dy: 0 },  west:  { dx: -speed, dy: 0 },
@@ -180,7 +214,11 @@ const handleStraightMovement = (vehicle: Vehicle, speed: number): void => {
     if (m) { vehicle.x += m.dx; vehicle.y += m.dy; }
 };
 
-export const shouldRemoveVehicle = (vehicle: Vehicle, canvasWidth: number, canvasHeight: number): boolean => {
+export const shouldRemoveVehicle = (
+    vehicle: Vehicle, 
+    canvasWidth: number, 
+    canvasHeight: number
+): boolean => {
     const buffer = 100;
     return vehicle.x < -buffer || vehicle.x > canvasWidth + buffer ||
            vehicle.y < -buffer || vehicle.y > canvasHeight + buffer;

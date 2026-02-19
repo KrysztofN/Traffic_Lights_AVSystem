@@ -1,4 +1,4 @@
-import type { WorldGeometry, Line, LightMap, LightState, MovementLights } from '../types';
+import type { WorldGeometry, Line, LightMap, LightState, MovementLights, Pedestrian } from '../types';
 
 export const drawLine = (
     ctx: CanvasRenderingContext2D,
@@ -122,8 +122,8 @@ export const drawTrafficLights = (
 };
 
 const lightToColor = (state: LightState, blink: boolean): string => {
-    if (state === 'green')       return '#00ff26';
-    if (state === 'yellow')      return '#ffdd00';
+    if (state === 'green') return '#00ff26';
+    if (state === 'yellow') return '#ffdd00';
     if (state === 'conditional') return blink ? '#00ff26' : '#006f00'; 
     return '#af0000';
 };
@@ -159,7 +159,10 @@ const drawArrowSet = (
     ctx.restore();
 };
 
-const drawSingleArrow = (ctx: CanvasRenderingContext2D, size: number): void => {
+const drawSingleArrow = (
+    ctx: CanvasRenderingContext2D, 
+    size: number
+): void => {
     ctx.beginPath();
     ctx.moveTo(-size/2, -size/2);  
     ctx.lineTo(size/2, 0);         
@@ -170,4 +173,45 @@ const drawSingleArrow = (ctx: CanvasRenderingContext2D, size: number): void => {
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 0.5;
     ctx.stroke();
+};
+
+export const drawPedestrian = (
+    ctx: CanvasRenderingContext2D,
+    pedestrian: Pedestrian,
+    image?: HTMLImageElement
+): void => {
+    const { x, y, width, height, path, direction } = pedestrian;
+    ctx.save();
+    ctx.translate(x, y);
+    let angle = 0;
+    if (path === 'north' || path === 'south') angle = direction === 1 ? Math.PI / 2 : -Math.PI / 2;
+    if (path === 'west' || path === 'east') angle = direction === 1 ? Math.PI : 0;
+    ctx.rotate(angle);
+    if (image?.complete) {
+        ctx.drawImage(image, -width / 2, -height / 2, width, height);
+    }
+    ctx.restore();
+};
+
+export const drawPedestrianLights = (
+    ctx: CanvasRenderingContext2D,
+    geometry: WorldGeometry,
+    pedestrianGreen: boolean
+): void => {
+    const { center, config } = geometry;
+    const half = config.roadWidth / 2;
+    const offset = 12;
+    const color = pedestrianGreen ? '#00ff26' : '#cc0000';
+
+    [
+        { x: center.x - half - offset, y: center.y - half - offset },
+        { x: center.x + half + offset, y: center.y - half - offset },
+        { x: center.x - half - offset, y: center.y + half + offset },
+        { x: center.x + half + offset, y: center.y + half + offset },
+    ].forEach(({ x, y }) => {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fill();
+    });
 };
