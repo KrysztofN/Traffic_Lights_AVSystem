@@ -5,7 +5,7 @@ import { generateWorldGeometry } from '../utils/geometryGenerator';
 import { drawCrossroad } from '../utils/renderer';
 
 
-export const TrafficWorld: React.FC<TrafficWorldProps> = ({ onGeometryReady }) => {
+export const TrafficWorld: React.FC<TrafficWorldProps> = ({ numLanes, onGeometryReady }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [worldGeometry, setWorldGeometry] = useState<WorldGeometry | null>(null);
     const { config, loading } = useConfig();
@@ -24,7 +24,8 @@ export const TrafficWorld: React.FC<TrafficWorldProps> = ({ onGeometryReady }) =
             const geometry = generateWorldGeometry(
                 canvas.width,
                 canvas.height,
-                config
+                config,
+                numLanes
             );
             
             setWorldGeometry(geometry);
@@ -37,7 +38,7 @@ export const TrafficWorld: React.FC<TrafficWorldProps> = ({ onGeometryReady }) =
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    }, [config, loading]);
+    }, [config, loading, numLanes]);
 
     useEffect(() => {
         if (worldGeometry && onGeometryReady) {
