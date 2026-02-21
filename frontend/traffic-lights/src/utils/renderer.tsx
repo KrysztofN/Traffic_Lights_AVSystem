@@ -1,4 +1,4 @@
-import type { WorldGeometry, Line, LightMap, LightState, MovementLights, Pedestrian } from '../types';
+import type { WorldGeometry, Line, LightMap, LightState, MovementLights, Pedestrian, Bicycle } from '../types';
 
 export const drawLine = (
     ctx: CanvasRenderingContext2D,
@@ -214,4 +214,19 @@ export const drawPedestrianLights = (
         ctx.arc(x, y, 5, 0, Math.PI * 2);
         ctx.fill();
     });
+};
+
+export const drawBicycle = (
+    ctx: CanvasRenderingContext2D,
+    bicycle: Bicycle,
+    image?: HTMLImageElement
+): void => {
+    ctx.save();
+    ctx.translate(bicycle.x, bicycle.y);
+    const angle = bicycle.path === 'north' || bicycle.path === 'south'
+        ? (bicycle.direction === 1 ? Math.PI / 2 : -Math.PI / 2)
+        : (bicycle.direction === 1 ? Math.PI : 0);
+    ctx.rotate(angle);
+    if (image?.complete) ctx.drawImage(image, -bicycle.size / 2, -bicycle.size / 2, bicycle.size, bicycle.size);
+    ctx.restore();
 };
