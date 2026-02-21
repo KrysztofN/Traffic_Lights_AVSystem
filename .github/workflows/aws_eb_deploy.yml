@@ -11,6 +11,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: http://jammy.us-east-1.elasticbeanstalk.com/
 
     steps:
       - name: Checkout code
@@ -38,3 +41,4 @@ jobs:
           region: us-east-1
           version_label: ${{ github.sha }}
           deployment_package: deploy.zip
+          wait_for_recovery_seconds: 60
