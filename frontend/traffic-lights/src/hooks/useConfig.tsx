@@ -9,7 +9,7 @@ export const useConfig = () => {
     useEffect(() => {
         const loadConfig = async () => {
             try {
-                const response = await fetch('/config/main.json');
+                const response = await fetch(`${import.meta.env.BASE_URL}config/main.json`);
                 const data: Config = await response.json();
                 setConfig(data);
             } catch (err) {
