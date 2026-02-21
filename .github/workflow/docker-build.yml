@@ -1,0 +1,40 @@
+name: Deployment to Elastic Beanstalk
+
+on:
+  push:
+    branches: 
+      - main
+    paths-ignore:
+      - '**.md'
+      - '**/README*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Configuring AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+      
+      - name: Generating deployment package
+        run: zip -r deploy.zip . -x '*.git*'
+
+      - name: Deploying to Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v22
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_session_token: ${{ secrets.AWS_SESSION_TOKEN }}
+          application_name: jammy
+          environment_name: jammy-env
+          region: us-east-1
+          version_label: ${{ github.sha }}
+          deployment_package: deploy.zip
