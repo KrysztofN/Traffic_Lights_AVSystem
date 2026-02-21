@@ -155,8 +155,8 @@ export const Simulation: React.FC<VehicleSimulationProps> = ({ numLanes, geometr
         const stopPositions: Record<RoadDirection, { x: number; y: number }> = {
             south: { x: pos.x, y: center.y + gConfig.stopLineDistance + config.vehicle.car.height },
             north: { x: pos.x, y: center.y - gConfig.stopLineDistance - config.vehicle.car.height },
-            east:  { x: center.x + gConfig.stopLineDistance + config.vehicle.car.width, y: pos.y },
-            west:  { x: center.x - gConfig.stopLineDistance - config.vehicle.car.width, y: pos.y },
+            east: { x: center.x + gConfig.stopLineDistance + config.vehicle.car.width, y: pos.y },
+            west: { x: center.x - gConfig.stopLineDistance - config.vehicle.car.width, y: pos.y },
         };
 
         const spawnPos = !isRunningRef.current ? stopPositions[startRoad] : { x: pos.x, y: pos.y };

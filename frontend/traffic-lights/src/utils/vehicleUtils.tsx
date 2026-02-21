@@ -194,8 +194,8 @@ const handleTurning = (
     const targets: Record<string, { x: number; y: number }> = {
         north: { x: center.x + targetLaneOffset, y: vehicle.y },
         south: { x: center.x - targetLaneOffset, y: vehicle.y },
-        east:  { x: vehicle.x, y: center.y + targetLaneOffset },
-        west:  { x: vehicle.x, y: center.y - targetLaneOffset },
+        east: { x: vehicle.x, y: center.y + targetLaneOffset },
+        west: { x: vehicle.x, y: center.y - targetLaneOffset },
     };
 
     let targetX = vehicle.x, targetY = vehicle.y;

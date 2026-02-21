@@ -1,5 +1,5 @@
 import TrafficWorld from './components/TrafficWorld';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import './App.css';
 import type { WorldGeometry } from './types';
 import { Simulation } from './components/Simulation';

@@ -52,6 +52,12 @@ export interface ZebraCrossing {
     direction: 'horizontal' | 'vertical';
 }
 
+export interface Crossable {
+    path: PedestrianPath;
+    direction: 1 | -1;
+}
+
+
 export interface WorldGeometry {
     canvas: {
         width: number;
@@ -197,6 +203,19 @@ export interface LightAlgorithm {
     tick: (state: LightAlgorithmState) => { state: LightAlgorithmState; lights: LightMap };
     isPedestrianPhase: (state: LightAlgorithmState) => boolean;
     isClearancePhase: (state: LightAlgorithmState) => boolean;
+}
+
+export interface IntelligentState extends LightAlgorithmState {
+    scenarioIdx: number;
+    phaseInScenario: number;
+    skippedCount: number[];
+    scenariosSinceLastPedestrian: number;
+    isPedestrian: boolean;
+    isClearance: boolean;
+    trafficData?: {
+        movementCount: Record<string, number>;
+        pedestrianWaiting: number;
+    };
 }
 
 export type RoadDirection = 'north' | 'south' | 'east' | 'west';

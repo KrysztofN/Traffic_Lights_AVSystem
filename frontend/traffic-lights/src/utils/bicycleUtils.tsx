@@ -14,10 +14,10 @@ export const spawnBicycle = (
     let x = 0, y = 0;
 
     switch (path) {
-        case 'north': y = bikeLanes.top.y + bikeLanes.top.height    / 2; x = direction === 1 ? 0 : canvas.width;  break;
-        case 'south': y = bikeLanes.bottom.y + bikeLanes.bottom.height / 2; x = direction === 1 ? 0 : canvas.width;  break;
-        case 'west':  x = bikeLanes.left.x + bikeLanes.left.width    / 2; y = direction === 1 ? 0 : canvas.height; break;
-        case 'east':  x = bikeLanes.right.x + bikeLanes.right.width   / 2; y = direction === 1 ? 0 : canvas.height; break;
+        case 'north': y = bikeLanes.top.y + bikeLanes.top.height / 2; x = direction === 1 ? 0 : canvas.width; break;
+        case 'south': y = bikeLanes.bottom.y + bikeLanes.bottom.height / 2; x = direction === 1 ? 0 : canvas.width; break;
+        case 'west':  x = bikeLanes.left.x + bikeLanes.left.width / 2; y = direction === 1 ? 0 : canvas.height; break;
+        case 'east':  x = bikeLanes.right.x + bikeLanes.right.width / 2; y = direction === 1 ? 0 : canvas.height; break;
     }
 
     return { id, x, y, size, speed: speed + Math.random() * 0.5, path, direction, state: 'riding', bikeImg };
@@ -44,15 +44,15 @@ export const updateBicyclePosition = (
 ): void => {
     if (isBlockedByPedestrian(bicycle, pedestrians)) return;
 
-    const axis     = getAxis(bicycle.path);
-    const stopPos  = getStopPosition(bicycle, geometry);
+    const axis = getAxis(bicycle.path);
+    const stopPos = getStopPosition(bicycle, geometry);
     const crossPos = getCrossTarget(bicycle, geometry);
-    const delta    = bicycle.direction * bicycle.speed;
+    const delta = bicycle.direction * bicycle.speed;
 
     if (bicycle.state === 'riding') {
         const reached = bicycle.direction === 1
-            ? bicycle[axis] < stopPos  && bicycle[axis] + bicycle.speed >= stopPos
-            : bicycle[axis] > stopPos  && bicycle[axis] - bicycle.speed <= stopPos;
+            ? bicycle[axis] < stopPos && bicycle[axis] + bicycle.speed >= stopPos
+            : bicycle[axis] > stopPos && bicycle[axis] - bicycle.speed <= stopPos;
         if (reached) {
             bicycle[axis] = stopPos;
             bicycle.state = pedestrianGreen ? 'crossing' : 'waiting';

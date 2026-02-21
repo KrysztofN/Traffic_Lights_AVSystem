@@ -10,7 +10,13 @@ export const timerLightAlgorithm: LightAlgorithm = {
             const nextPhase = (currentPhase + 1) % PHASES.length;
             return { state: { currentPhase: nextPhase, phaseTimer: 0, lights: PHASES[nextPhase] }, lights: PHASES[nextPhase] };
         }
-        return { state: { currentPhase, phaseTimer: nextTimer, lights: PHASES[currentPhase] }, lights: PHASES[currentPhase] };
+        return { state: { 
+                    currentPhase, 
+                    phaseTimer: nextTimer, 
+                    lights: PHASES[currentPhase] 
+                }, 
+                lights: PHASES[currentPhase] 
+        };
     },
 
     isPedestrianPhase: ({ currentPhase }) => currentPhase === PEDESTRIAN_PHASE_INDEX,

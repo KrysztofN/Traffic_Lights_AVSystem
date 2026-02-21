@@ -7,18 +7,23 @@ const CLEARANCE_DURATION = 500;
 const PEDESTRIAN_EVERY_N_SCENARIOS = 4;
 const STARVATION_THRESHOLD = 2;
 
-const scoreScenario = (idx: number, movementCount: Record<string, number>): number => {
+const scoreScenario = (
+    idx: number, 
+    movementCount: Record<string, number>
+): number => {
     const g = (k: string) => movementCount[k] ?? 0;
     switch (idx) {
         case 0: return g('north_straight') + g('north_right') + g('south_straight') + g('south_right');
-        case 1: return g('east_straight')  + g('east_right')  + g('west_straight')  + g('west_right');
+        case 1: return g('east_straight') + g('east_right') + g('west_straight') + g('west_right');
         case 2: return g('north_left') + g('south_left');
-        case 3: return g('east_left')  + g('west_left');
+        case 3: return g('east_left') + g('west_left');
         default: return 0;
     }
 };
 
-const pickNextScenario = (state: IntelligentState): number => {
+const pickNextScenario = (
+    state: IntelligentState
+): number => {
     const movementCount = state.trafficData?.movementCount ?? {};
     const prioritized = [0, 1, 2, 3].filter(i => state.skippedCount[i] >= STARVATION_THRESHOLD);
     const candidates = prioritized.length > 0 ? prioritized : [0, 1, 2, 3];
@@ -27,7 +32,9 @@ const pickNextScenario = (state: IntelligentState): number => {
     , candidates[0]);
 };
 
-const advanceScenario = (state: IntelligentState): IntelligentState => {
+const advanceScenario = (
+    state: IntelligentState
+): IntelligentState => {
     const nextScenario = pickNextScenario(state);
     const movementCount = state.trafficData?.movementCount ?? {};
     const newSkipped = state.skippedCount.map((c, i) => {
