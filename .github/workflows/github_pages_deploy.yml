@@ -1,0 +1,39 @@
+name: Deployment to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - '**/README*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://KrysztofN.github.io/Traffic_Lights_AVSystem
+    
+    steps:
+      - name: Chcekout node
+        uses: actions/checkout@v6
+      
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 25
+        
+      - name: Install dependencies
+        working-directory: frontend/traffic-lights
+        run: npm install
+      
+      - name: Build
+        working-directory: frontend/traffic-lights
+        run: npm run build
+
+      - name: GitHub Pages deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: frontend/traffic-lights/dist
