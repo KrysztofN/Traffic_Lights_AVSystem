@@ -96,17 +96,17 @@ export const Simulation: React.FC<VehicleSimulationProps> = ({ numLanes, geometr
     useEffect(() => {
         CAR_FILES.forEach(filename => {
             const img = new Image();
-            img.src = `/${filename}`;
+            img.src = `${import.meta.env.BASE_URL}${filename}`;
             carImages.current.set(filename, img);
         });
         PEDESTRIAN_FILES.forEach(filename => {
             const img = new Image();
-            img.src = `/${filename}`;
+            img.src = `${import.meta.env.BASE_URL}${filename}`;
             pedestrianImages.current.set(filename, img);
         });
         BICYCLE_FILES.forEach(filename => {
             const img = new Image();
-            img.src = `/${filename}`;
+            img.src = `${import.meta.env.BASE_URL}${filename}`;
             bicycleImages.current.set(filename, img);
         });
     }, []);
