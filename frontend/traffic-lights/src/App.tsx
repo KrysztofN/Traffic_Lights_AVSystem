@@ -1,17 +1,30 @@
-import TrafficWorld from './components/World';
+import TrafficWorld from './components/TrafficWorld';
 import { useState, useEffect } from 'react';
 import './App.css';
-import type { WorldGeometry } from './common/types';
+import type { WorldGeometry } from './types';
+import { Simulation } from './components/Simulation';
 
 function App() {
     const [worldGeometry, setWorldGeometry] = useState<WorldGeometry | null>(null);
+    const [numLanes, setNumLanes] = useState(1);
 
-    useEffect(() => {
-        if (worldGeometry) {
-            console.log("Sim ready", worldGeometry);
-        }
-    }, [worldGeometry]);
-    return <TrafficWorld onGeometryReady={setWorldGeometry} />;
+    const handleLaneChange = (n: number) => {
+        setNumLanes(n);
+        setWorldGeometry(null); 
+    };
+
+    return (
+        <>
+            <TrafficWorld numLanes={numLanes} onGeometryReady={setWorldGeometry} />
+            {worldGeometry && (
+                <Simulation 
+                    geometry={worldGeometry} 
+                    numLanes={numLanes}
+                    onLaneChange={handleLaneChange}
+                />
+            )}
+        </>
+    );
 }
 
 export default App;

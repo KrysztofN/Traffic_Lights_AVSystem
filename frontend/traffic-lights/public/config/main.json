@@ -1,6 +1,35 @@
 {
     "lanes" : {
-        "count" : 1
+        "count" : 3,
+        "laneWidth": 40
+    },
+    "zebra": {
+        "zebraWidth": 8,
+        "zebraGap": 8,
+        "zebraLength": 60,
+        "zebraMargin": 15
+    },
+    "vehicle": {
+        "car": {
+            "width": 40,
+            "height": 40,
+            "speed": 2
+        }
+    },
+    "simulation": {
+        "stepSize": 10,
+        "maxPedestriansPerPath": 10,
+        "spawnInterval": 120,
+        "pedestrianPhaseIndex": 16,
+        "clearancePhaseIndex": 17
+    },
+    "pedestrian": {
+        "speed": 0.5,
+        "size": 16
+    },
+    "bicycle": {
+        "speed": 1.4,
+        "size": 30
     }
 
 }
