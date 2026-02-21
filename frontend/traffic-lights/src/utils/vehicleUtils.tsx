@@ -67,10 +67,10 @@ const shouldWaitAtLight = (
         const frontOffsetEW = vehicle.height / 2;
         let atStopLine = false;
         switch (vehicle.currentRoad) {
-            case 'north': atStopLine = vehicle.y <= center.y + stopLineDistance + frontOffsetNS; break;
-            case 'south': atStopLine = vehicle.y >= center.y - stopLineDistance - frontOffsetNS; break;
-            case 'east':  atStopLine = vehicle.x >= center.x - stopLineDistance - frontOffsetEW; break;
-            case 'west':  atStopLine = vehicle.x <= center.x + stopLineDistance + frontOffsetEW; break;
+            case 'north': atStopLine = vehicle.y <= center.y + stopLineDistance + frontOffsetNS + 10; break;
+            case 'south': atStopLine = vehicle.y >= center.y - stopLineDistance - frontOffsetNS - 10; break;
+            case 'east':  atStopLine = vehicle.x >= center.x - stopLineDistance - frontOffsetEW - 10; break;
+            case 'west':  atStopLine = vehicle.x <= center.x + stopLineDistance + frontOffsetEW + 10; break;
         }
         if (!atStopLine) return false;
 
@@ -80,7 +80,10 @@ const shouldWaitAtLight = (
     return false;
 };
 
-export const getMovementType = (startRoad: RoadDirection, endRoad: RoadDirection): MovementType => {
+export const getMovementType = (
+    startRoad: RoadDirection, 
+    endRoad: RoadDirection
+): MovementType => {
     const rightTurns = [['north','west'],['south','east'],['east','north'],['west','south']];
     const leftTurns  = [['north','east'],['south','west'],['east','south'],['west','north']];
     if (rightTurns.some(([s,e]) => s === startRoad && e === endRoad)) return 'right';
@@ -88,7 +91,11 @@ export const getMovementType = (startRoad: RoadDirection, endRoad: RoadDirection
     return 'straight';
 };
 
-export const getSpawnPosition = (road: RoadDirection, lane: number, geometry: WorldGeometry) => {
+export const getSpawnPosition = (
+    road: RoadDirection, 
+    lane: number, 
+    geometry: WorldGeometry
+) => {
     const { center, config } = geometry;
     const laneOffset = (lane + 0.5) * config.laneWidth;
     const offScreen = 80;
@@ -101,7 +108,11 @@ export const getSpawnPosition = (road: RoadDirection, lane: number, geometry: Wo
     return positions[road];
 };
 
-export const selectLane = (startRoad: RoadDirection, endRoad: RoadDirection, laneCount: number): number => {
+export const selectLane = (
+    startRoad: RoadDirection, 
+    endRoad: RoadDirection, 
+    laneCount: number
+): number => {
     const rightTurns = [['north','west'],['south','east'],['east','north'],['west','south']];
     const leftTurns  = [['north','east'],['south','west'],['east','south'],['west','north']];
     if (rightTurns.some(([s,e]) => s === startRoad && e === endRoad)) return laneCount - 1;
@@ -151,8 +162,11 @@ export const updateVehiclePosition = (
     }
 
     if (shouldWaitAtLight(vehicle, allVehicles, center, stopLineDistance, lights)) {
+        vehicle.state = 'waiting';
         return;
     }
+
+    vehicle.state = 'moving';
 
     const intersectionRadius = roadWidth / 2 + 50;
     const atIntersection =
