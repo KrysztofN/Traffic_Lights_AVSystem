@@ -6,12 +6,23 @@ import { Simulation } from './components/Simulation';
 
 function App() {
     const [worldGeometry, setWorldGeometry] = useState<WorldGeometry | null>(null);
+    const [numLanes, setNumLanes] = useState(1);
 
-    useEffect(() => {}, [worldGeometry]);
+    const handleLaneChange = (n: number) => {
+        setNumLanes(n);
+        setWorldGeometry(null); 
+    };
+
     return (
         <>
-            <TrafficWorld onGeometryReady={setWorldGeometry} />
-            {worldGeometry && <Simulation geometry={worldGeometry} />}
+            <TrafficWorld numLanes={numLanes} onGeometryReady={setWorldGeometry} />
+            {worldGeometry && (
+                <Simulation 
+                    geometry={worldGeometry} 
+                    numLanes={numLanes}
+                    onLaneChange={handleLaneChange}
+                />
+            )}
         </>
     );
 }
