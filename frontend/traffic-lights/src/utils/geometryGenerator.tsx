@@ -3,9 +3,10 @@ import type { Config, WorldGeometry, Line, Rectangle } from '../types';
 export const generateWorldGeometry = (
     canvasWidth: number,
     canvasHeight: number,
-    config: Config
+    config: Config,
+    numOfLanes: number
 ): WorldGeometry => {
-    const { count: numOfLanes, laneWidth } = config.lanes;
+    const { laneWidth } = config.lanes;
     const { zebraWidth, zebraGap, zebraLength, zebraMargin } = config.zebra;
 
     const centerX = canvasWidth / 2;
