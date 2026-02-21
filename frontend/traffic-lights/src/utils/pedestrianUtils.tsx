@@ -1,4 +1,5 @@
 import type { Pedestrian, PedestrianPath, WorldGeometry, PedestrianData } from '../types';
+import { getStopPosition, getCrossTarget, getAxis } from './crossUtils';
 
 export const spawnPedestrian = (
     id: string, 
@@ -47,59 +48,12 @@ export const spawnPedestrian = (
     return { id, x, y, width: pedestrianData.size, height: pedestrianData.size, speed: pedestrianData.speed + Math.random() * 0.5, path, direction, state: 'walking', pedestrianImg };
 };
 
-const getStopPosition = (
-    pedestrian: Pedestrian, 
-    geometry: WorldGeometry
-): number => {
-    const { center, config } = geometry;
-    const half = config.roadWidth / 2;
-    const margin = 10;
-
-    switch (pedestrian.path) {
-        case 'north':
-        case 'south':
-            return pedestrian.direction === 1
-                ? center.x - half - margin   
-                : center.x + half + margin;  
-        case 'west':
-        case 'east':
-            return pedestrian.direction === 1
-                ? center.y - half - margin   
-                : center.y + half + margin;  
-    }
-};
-
-const getCrossTarget = (
-    pedestrian: Pedestrian, 
-    geometry: WorldGeometry
-): number => {
-    const { center, config } = geometry;
-    const half = config.roadWidth / 2;
-    const margin = 4;
-
-    switch (pedestrian.path) {
-        case 'north':
-        case 'south':
-            return pedestrian.direction === 1
-                ? center.x + half + margin
-                : center.x - half - margin;
-        case 'west':
-        case 'east':
-            return pedestrian.direction === 1
-                ? center.y + half + margin
-                : center.y - half - margin;
-    }
-};
-
-const getAxis = (pedestrian: Pedestrian): 'x' | 'y' =>
-    pedestrian.path === 'north' || pedestrian.path === 'south' ? 'x' : 'y';
-
 export const updatePedestrianPosition = (
     pedestrian: Pedestrian,
     geometry: WorldGeometry,
     pedestrianGreen: boolean
 ): void => {
-    const axis = getAxis(pedestrian);
+    const axis = getAxis(pedestrian.path);
     const stopPos = getStopPosition(pedestrian, geometry);
     const crossPos = getCrossTarget(pedestrian, geometry);
     const delta = pedestrian.direction * pedestrian.speed;
