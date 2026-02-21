@@ -1,0 +1,40 @@
+{
+  "commands": [
+    
+    { "type": "addVehicle", "vehicleId": "s1_north_straight", "startRoad": "north", "endRoad": "south" },
+    { "type": "addVehicle", "vehicleId": "s2_north_straight", "startRoad": "north", "endRoad": "south" },
+    { "type": "addVehicle", "vehicleId": "s3_north_straight", "startRoad": "north", "endRoad": "south" },
+    { "type": "addVehicle", "vehicleId": "s1_north_right",    "startRoad": "north", "endRoad": "west"  },
+    { "type": "addVehicle", "vehicleId": "s1_south_straight", "startRoad": "south", "endRoad": "north" },
+    { "type": "addVehicle", "vehicleId": "s1_south_right",    "startRoad": "south", "endRoad": "east"  },
+
+    { "type": "addVehicle", "vehicleId": "s1_east_cond_right", "startRoad": "east", "endRoad": "north" },
+    { "type": "addVehicle", "vehicleId": "s1_west_cond_right", "startRoad": "west", "endRoad": "south" },
+
+    { "type": "step" }, { "type": "step" }, { "type": "step" }, { "type": "step" }, { "type": "step" },
+    { "type": "step" }, { "type": "step" }, { "type": "step" }, { "type": "step" }, { "type": "step" },
+
+    { "type": "addVehicle", "vehicleId": "s2_east_straight",  "startRoad": "east",  "endRoad": "west"  },
+    { "type": "addVehicle", "vehicleId": "s2_east_right",     "startRoad": "east",  "endRoad": "north" },
+    { "type": "addVehicle", "vehicleId": "s265_west_straight",  "startRoad": "west",  "endRoad": "east"  },
+    { "type": "addVehicle", "vehicleId": "s232_west_straight",  "startRoad": "west",  "endRoad": "east"  },
+    { "type": "addVehicle", "vehicleId": "s2123_west_straight",  "startRoad": "west",  "endRoad": "east"  },
+    { "type": "addVehicle", "vehicleId": "s2_west_right",     "startRoad": "west",  "endRoad": "south" },
+
+    { "type": "addVehicle", "vehicleId": "s2_north_cond_right", "startRoad": "north", "endRoad": "west" },
+    { "type": "addVehicle", "vehicleId": "s2_south_cond_right", "startRoad": "south", "endRoad": "east" },
+
+    { "type": "step" }, { "type": "step" }, { "type": "step" }, { "type": "step" }, { "type": "step" },
+    { "type": "step" }, { "type": "step" }, { "type": "step" }, { "type": "step" }, { "type": "step" },
+
+    { "type": "addVehicle", "vehicleId": "s3_north_left", "startRoad": "north", "endRoad": "east" },
+    { "type": "addVehicle", "vehicleId": "s3_south_left", "startRoad": "south", "endRoad": "west" },
+
+    { "type": "step" }, { "type": "step" }, { "type": "step" }, { "type": "step" }, { "type": "step" },
+
+    { "type": "addVehicle", "vehicleId": "s4_east_left", "startRoad": "east", "endRoad": "south" },
+    { "type": "addVehicle", "vehicleId": "s4_west_left", "startRoad": "west", "endRoad": "north" },
+
+    { "type": "step" }, { "type": "step" }, { "type": "step" }, { "type": "step" }, { "type": "step" }
+  ]
+}
