@@ -17,12 +17,17 @@ export interface Config {
         };
     };
     simulation: {
+        stepSize: number,
         maxPedestriansPerPath: number,
         spawnInterval: number,
         pedestrianPhaseIndex: number,
         clearancePhaseIndex: number
-    },
+    };
     pedestrian: {
+        speed: number,
+        size: number
+    };
+    bicycle: {
         speed: number,
         size: number
     }
@@ -107,7 +112,7 @@ export interface Vehicle {
     currentRoad: RoadDirection;
     targetRoad: RoadDirection;
     lane: number;
-    state: 'moving' | 'stopping' | 'stopped' | 'turning';
+    state: 'moving' | 'stopping' | 'stopped' | 'turning' | 'waiting';
     route: RoadDirection[];
     carImage: string;
 }
@@ -118,11 +123,14 @@ export interface Command {
     endRoad?: RoadDirection;
 }
 export interface TrafficWorldProps {
+    numLanes: number;
     onGeometryReady: (geometry: WorldGeometry) => void;
 }
 
 export interface VehicleSimulationProps {
+    numLanes: number;
     geometry: WorldGeometry;
+    onLaneChange: (n: number) => void;
 }
 export interface Pedestrian {
     id: string;
@@ -137,18 +145,40 @@ export interface Pedestrian {
     pedestrianImg: string;
 }
 
+export interface Bicycle {
+    id: string;
+    x: number;
+    y: number;
+    size: number;
+    speed: number;
+    path: PedestrianPath;
+    direction: 1 | -1;
+    state: 'riding' | 'waiting' | 'crossing';
+    bikeImg: string;
+}
+
 export interface SimulationControlsProps {
-    vehicles: Map<string, Vehicle>;
     currentCommandIndex: number;
     commandsLength: number;
     isRunning: boolean;
     isMinimized: boolean;
     roadCounts: Record<RoadDirection, number>;
     waitingCounts: Record<PedestrianPath, number>;
+    showPedestrians: boolean;
+    showBicycles: boolean;
+    numberOfLanes: number,
+    stepStatuses: { leftVehicles: string[] }[];
+    algorithm: String,
+    onAlgorithmChange: (algo: 'timer' | 'intelligent') => void;
     onToggleRunning: () => void;
     onToggleMinimized: () => void;
+    onTogglePedestrians: () => void;
+    onToggleBicycles: () => void;
+    onLaneChange: (n: number) => void;
     onStep: () => void;
     onReset: () => void;
+    onExport: () => void;
+    onLoadFile: (f: File) => void;
 }
 
 export interface PedestrianData {
