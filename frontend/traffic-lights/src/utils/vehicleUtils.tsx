@@ -154,7 +154,13 @@ export const updateVehiclePosition = (
     const { center, config } = geometry;
     const { laneWidth, stopLineDistance, roadWidth } = config;
 
-    if (vehicle.state !== 'turning' && isVehicleAhead(vehicle, allVehicles, vehicle.width + 8)) return;
+    if (vehicle.state !== 'turning' && isVehicleAhead(vehicle, allVehicles, vehicle.width + 8)) {
+        const movementLight = lights[vehicle.startRoad]?.[vehicle.movementType];
+        if (movementLight === 'green' || movementLight === 'conditional') {
+            vehicle.state = 'moving';
+        }
+        return;
+    }
 
     if (vehicle.state === 'turning') {
         handleTurning(vehicle, center, laneWidth, speed);
@@ -236,4 +242,18 @@ export const shouldRemoveVehicle = (
     const buffer = 100;
     return vehicle.x < -buffer || vehicle.x > canvasWidth + buffer ||
            vehicle.y < -buffer || vehicle.y > canvasHeight + buffer;
+};
+
+const isTooCloseToAnyVehicle = (
+    vehicle: Vehicle,
+    allVehicles: Map<string, Vehicle>,
+    minDistance: number
+): boolean => {
+    return Array.from(allVehicles.values()).some(other => {
+        if (other.id === vehicle.id) return false;
+        if (other.state === 'turning' && other.targetRoad !== vehicle.targetRoad) return false;
+        const dx = other.x - vehicle.x;
+        const dy = other.y - vehicle.y;
+        return Math.sqrt(dx * dx + dy * dy) < minDistance;
+    });
 };
