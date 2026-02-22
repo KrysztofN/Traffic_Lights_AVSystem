@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { Vehicle, VehicleSimulationProps, Command, RoadDirection, Pedestrian, PedestrianPath, Bicycle, SimulationControlsProps, LightAlgorithm, LightAlgorithmState, IntelligentState } from '../types';
+import type { Vehicle, VehicleSimulationProps, Command, RoadDirection, Pedestrian, PedestrianPath, Bicycle, SimulationControlsProps, LightAlgorithm, LightAlgorithmState } from '../types';
 import { useCommands } from '../hooks/useCommands';
 import { useConfig } from '../hooks/useConfig';
 import { getSpawnPosition, selectLane, updateVehiclePosition, shouldRemoveVehicle, getMovementType } from '../utils/vehicleUtils';
