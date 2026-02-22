@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { Vehicle, VehicleSimulationProps, Command, RoadDirection, Pedestrian, PedestrianPath, Bicycle, SimulationControlsProps, LightAlgorithm, LightAlgorithmState } from '../types';
+import type { Vehicle, VehicleSimulationProps, Command, RoadDirection, Pedestrian, PedestrianPath, Bicycle, SimulationControlsProps, LightAlgorithm, LightAlgorithmState, IntelligentState } from '../types';
 import { useCommands } from '../hooks/useCommands';
 import { useConfig } from '../hooks/useConfig';
 import { getSpawnPosition, selectLane, updateVehiclePosition, shouldRemoveVehicle, getMovementType } from '../utils/vehicleUtils';
@@ -271,14 +271,15 @@ export const Simulation: React.FC<VehicleSimulationProps> = ({ numLanes, geometr
         const lights = lightStateRef.current.lights;
 
         (['north', 'south', 'east', 'west'] as RoadDirection[]).forEach(road => {
-            const vehicle = Array.from(vehiclesRef.current.values()).find(v =>
-                v.startRoad === road &&
-                lights[road][v.movementType] === 'green'
-            );
-            if (vehicle) {
-                vehiclesRef.current.delete(vehicle.id);
-                leftVehicles.push(vehicle.id);
-            }
+            Array.from(vehiclesRef.current.values())
+                .filter(v =>
+                    v.startRoad === road &&
+                    (lights[road][v.movementType] === 'green' || lights[road][v.movementType] === 'conditional')
+                )
+                .forEach(v => {
+                    vehiclesRef.current.delete(v.id);
+                    leftVehicles.push(v.id);
+                });
         });
 
         setRoadCounts(getRoadCounts());
@@ -325,9 +326,15 @@ export const Simulation: React.FC<VehicleSimulationProps> = ({ numLanes, geometr
     };
 
     const advanceToNextPhase = () => {
+        (lightStateRef.current as any).trafficData = {
+            vehicleWaiting: getRoadCounts(),
+            pedestrianWaiting: Object.values(getWaitingCounts(pedestriansRef.current)).reduce((a, b) => a + b, 0),
+            movementCount: getMovementCounts()
+        };
+
         const { state } = algorithmRef.current.tick({
             ...lightStateRef.current,
-            phaseTimer: Infinity  
+            phaseTimer: Infinity
         });
         lightStateRef.current = state;
     };

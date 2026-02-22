@@ -209,12 +209,13 @@ export interface IntelligentState extends LightAlgorithmState {
     scenarioIdx: number;
     phaseInScenario: number;
     skippedCount: number[];
-    scenariosSinceLastPedestrian: number;
     isPedestrian: boolean;
     isClearance: boolean;
+    scenariosSinceLastPedestrian: number;
     trafficData?: {
         movementCount: Record<string, number>;
         pedestrianWaiting: number;
+        pedestrianTotal: number;
     };
 }
 

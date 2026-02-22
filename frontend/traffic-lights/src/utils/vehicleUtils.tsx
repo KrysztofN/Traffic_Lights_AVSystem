@@ -7,6 +7,13 @@ const CONDITIONAL_CONFLICTS: Record<string, RoadDirection> = {
     south: 'east', 
 };
 
+const TURNING_CONFLICTS: Partial<Record<RoadDirection, RoadDirection[]>> = {
+    south: ['north', 'south'],
+    north: ['north', 'south'],
+    east:  ['east', 'west'],
+    west:  ['east', 'west'],
+};
+
 const isConflictingVehicleNearby = (
     vehicle: Vehicle,
     allVehicles: Map<string, Vehicle>,
@@ -154,18 +161,12 @@ export const updateVehiclePosition = (
     const { center, config } = geometry;
     const { laneWidth, stopLineDistance, roadWidth } = config;
 
-    if (vehicle.state !== 'turning' && isVehicleAhead(vehicle, allVehicles, vehicle.width + 8)) {
-        const movementLight = lights[vehicle.startRoad]?.[vehicle.movementType];
-        if (movementLight === 'green' || movementLight === 'conditional') {
-            vehicle.state = 'moving';
-        }
-        return;
-    }
-
     if (vehicle.state === 'turning') {
+        if (isTooCloseToAnyVehicle(vehicle, allVehicles, vehicle.width + 4)) return;
         handleTurning(vehicle, center, laneWidth, speed);
         return;
     }
+    if (isVehicleAhead(vehicle, allVehicles, vehicle.width + 8)) return;
 
     if (shouldWaitAtLight(vehicle, allVehicles, center, stopLineDistance, lights)) {
         vehicle.state = 'waiting';
@@ -251,6 +252,16 @@ const isTooCloseToAnyVehicle = (
 ): boolean => {
     return Array.from(allVehicles.values()).some(other => {
         if (other.id === vehicle.id) return false;
+        if (
+            (other.state === 'moving' || other.state === 'waiting') &&
+            other.movementType === 'straight' &&
+            TURNING_CONFLICTS[vehicle.targetRoad]?.includes(other.currentRoad)
+        ) {
+            const dx = other.x - vehicle.x;
+            const dy = other.y - vehicle.y;
+            return Math.sqrt(dx * dx + dy * dy) < minDistance * 2;
+        }
+
         if (other.state === 'turning' && other.targetRoad !== vehicle.targetRoad) return false;
         const dx = other.x - vehicle.x;
         const dy = other.y - vehicle.y;

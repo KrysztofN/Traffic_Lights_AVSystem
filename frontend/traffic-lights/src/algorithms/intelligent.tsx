@@ -4,13 +4,10 @@ import { PHASES, PEDESTRIAN_LIGHTS, PEDESTRIAN_PHASE_INDEX, CLEARANCE_PHASE_INDE
 const SCENARIO_DURATIONS = [80, 320, 160, 80];
 const PEDESTRIAN_DURATION = 300;
 const CLEARANCE_DURATION = 500;
-const PEDESTRIAN_EVERY_N_SCENARIOS = 4;
 const STARVATION_THRESHOLD = 2;
+const PEDESTRIAN_EVERY_N_SCENARIOS = 4;
 
-const scoreScenario = (
-    idx: number, 
-    movementCount: Record<string, number>
-): number => {
+const scoreScenario = (idx: number, movementCount: Record<string, number>): number => {
     const g = (k: string) => movementCount[k] ?? 0;
     switch (idx) {
         case 0: return g('north_straight') + g('north_right') + g('south_straight') + g('south_right');
@@ -21,20 +18,20 @@ const scoreScenario = (
     }
 };
 
-const pickNextScenario = (
-    state: IntelligentState
-): number => {
+const pickNextScenario = (state: IntelligentState): number => {
     const movementCount = state.trafficData?.movementCount ?? {};
     const prioritized = [0, 1, 2, 3].filter(i => state.skippedCount[i] >= STARVATION_THRESHOLD);
     const candidates = prioritized.length > 0 ? prioritized : [0, 1, 2, 3];
-    return candidates.reduce((best, i) =>
+
+    const best = candidates.reduce((best, i) =>
         scoreScenario(i, movementCount) > scoreScenario(best, movementCount) ? i : best
     , candidates[0]);
+
+    if (scoreScenario(best, movementCount) === 0) return state.scenarioIdx;
+    return best;
 };
 
-const advanceScenario = (
-    state: IntelligentState
-): IntelligentState => {
+const advanceScenario = (state: IntelligentState): IntelligentState => {
     const nextScenario = pickNextScenario(state);
     const movementCount = state.trafficData?.movementCount ?? {};
     const newSkipped = state.skippedCount.map((c, i) => {
@@ -71,33 +68,60 @@ export const intelligentLightAlgorithm: LightAlgorithm = {
 
         if (state.isClearance) {
             if (nextTimer >= CLEARANCE_DURATION) {
-                const next = advanceScenario({ ...state, scenariosSinceLastPedestrian: 0 });
-                return { state: { ...next, isPedestrian: false, isClearance: false }, lights: next.lights };
+                const next = advanceScenario(state);
+                return { 
+                    state: { 
+                        ...next, 
+                        isPedestrian: false, 
+                        isClearance: false 
+                        }, 
+                    lights: next.lights 
+                };
             }
-            return { state: { ...state, phaseTimer: nextTimer }, lights: state.lights };
+            return { 
+                state: { 
+                    ...state, 
+                    phaseTimer: nextTimer 
+                }, 
+                lights: state.lights
+            };
         }
 
         if (state.isPedestrian) {
             if (nextTimer >= PEDESTRIAN_DURATION) {
-                return { state: { ...state, phaseTimer: 0, isClearance: true, currentPhase: CLEARANCE_PHASE_INDEX }, lights: PEDESTRIAN_LIGHTS };
+                return { 
+                    state: { 
+                        ...state, 
+                        phaseTimer: 0, 
+                        isClearance: true,
+                        isPedestrian: false,
+                        currentPhase: CLEARANCE_PHASE_INDEX 
+                    }, 
+                    lights: PEDESTRIAN_LIGHTS 
+                };
             }
-            return { state: { ...state, phaseTimer: nextTimer }, lights: PEDESTRIAN_LIGHTS };
+            return { 
+                state: { 
+                    ...state, 
+                    phaseTimer: nextTimer 
+                }, 
+                lights: PEDESTRIAN_LIGHTS 
+            };
         }
 
         if (nextTimer >= SCENARIO_DURATIONS[state.phaseInScenario]) {
             const nextPhaseInScenario = state.phaseInScenario + 1;
 
             if (nextPhaseInScenario >= 4) {
-                const newSinceLastPed = state.scenariosSinceLastPedestrian + 1;
+                const newSinceLastPed = (state.scenariosSinceLastPedestrian ?? 0) + 1;
+                const pedestrianWaiting = state.trafficData?.pedestrianWaiting ?? 0;
+                const movementCount = state.trafficData?.movementCount ?? {};
+                const anyCarsWaiting = [0, 1, 2, 3].some(i => scoreScenario(i, movementCount) > 0);
 
-                if (newSinceLastPed >= PEDESTRIAN_EVERY_N_SCENARIOS) {
-                    const pedestrianWaiting = state.trafficData?.pedestrianWaiting ?? 0;
+                const shouldGivePedestrians = pedestrianWaiting > 0 &&
+                    (newSinceLastPed >= PEDESTRIAN_EVERY_N_SCENARIOS || !anyCarsWaiting);
 
-                    if (pedestrianWaiting === 0) {
-                        const next = advanceScenario({ ...state, scenariosSinceLastPedestrian: 0 });
-                        return { state: next, lights: next.lights };
-                    }
-
+                if (shouldGivePedestrians) {
                     return {
                         state: {
                             ...state,
@@ -105,7 +129,7 @@ export const intelligentLightAlgorithm: LightAlgorithm = {
                             isPedestrian: true,
                             isClearance: false,
                             lights: PEDESTRIAN_LIGHTS,
-                            scenariosSinceLastPedestrian: newSinceLastPed,
+                            scenariosSinceLastPedestrian: 0,
                             currentPhase: PEDESTRIAN_PHASE_INDEX,
                         },
                         lights: PEDESTRIAN_LIGHTS,
@@ -129,9 +153,15 @@ export const intelligentLightAlgorithm: LightAlgorithm = {
             };
         }
 
-        return { state: { ...state, phaseTimer: nextTimer }, lights: state.lights };
+        return { 
+            state: { 
+                ...state, 
+                phaseTimer: nextTimer 
+            }, 
+            lights: state.lights
+        };
     },
 
     isPedestrianPhase: (s) => (s as IntelligentState).isPedestrian,
-    isClearancePhase:  (s) => (s as IntelligentState).isClearance,
+    isClearancePhase: (s) => (s as IntelligentState).isClearance,
 };
