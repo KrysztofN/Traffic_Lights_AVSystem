@@ -1,0 +1,50 @@
+{
+  "stepStatuses": [
+    {
+      "leftVehicles": [
+        "v2",
+        "v1"
+      ]
+    },
+    {
+      "leftVehicles": []
+    },
+    {
+      "leftVehicles": []
+    },
+    {
+      "leftVehicles": []
+    },
+    {
+      "leftVehicles": [
+        "v3"
+      ]
+    },
+    {
+      "leftVehicles": []
+    },
+    {
+      "leftVehicles": []
+    },
+    {
+      "leftVehicles": []
+    },
+    {
+      "leftVehicles": []
+    },
+    {
+      "leftVehicles": []
+    },
+    {
+      "leftVehicles": []
+    },
+    {
+      "leftVehicles": []
+    },
+    {
+      "leftVehicles": [
+        "v4"
+      ]
+    }
+  ]
+}

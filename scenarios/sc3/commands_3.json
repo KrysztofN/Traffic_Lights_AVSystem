@@ -1,0 +1,25 @@
+{
+  "commands": [
+    { "type": "addVehicle", "vehicleId": "v1", "startRoad": "north", "endRoad": "east" },
+    { "type": "addVehicle", "vehicleId": "v2", "startRoad": "north", "endRoad": "west" },
+    { "type": "addVehicle", "vehicleId": "v3", "startRoad": "south", "endRoad": "east" },
+    { "type": "addVehicle", "vehicleId": "v4", "startRoad": "south", "endRoad": "west" },
+    { "type": "addVehicle", "vehicleId": "v5", "startRoad": "east", "endRoad": "north" },
+    { "type": "addVehicle", "vehicleId": "v6", "startRoad": "east", "endRoad": "south" },
+    { "type": "addVehicle", "vehicleId": "v7", "startRoad": "west", "endRoad": "north" },
+    { "type": "addVehicle", "vehicleId": "v8", "startRoad": "west", "endRoad": "south" },
+    { "type": "step" },
+    { "type": "step" },
+    { "type": "step" },
+    { "type": "step" },
+    { "type": "step" },
+    { "type": "step" },
+    { "type": "step" },
+    { "type": "step" },
+    { "type": "step" },
+    { "type": "step" },
+    { "type": "step" },
+    { "type": "step" },
+    { "type": "step" }
+  ]
+}
