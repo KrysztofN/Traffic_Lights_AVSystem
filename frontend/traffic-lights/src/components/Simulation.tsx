@@ -384,6 +384,7 @@ export const Simulation: React.FC<VehicleSimulationProps> = ({ numLanes, geometr
         simStartTimeRef.current = null;
         stepStatusesRef.current = [];
         setStepStatuses([]);
+        isRunningRef.current = false;
 
         const ctx = ctxRef.current;
         if (ctx) ctx.clearRect(0, 0, geometry.canvas.width, geometry.canvas.height);
